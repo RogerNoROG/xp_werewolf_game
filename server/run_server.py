@@ -6,7 +6,31 @@ import sys
 # 检查是否已经在虚拟环境中
 if hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
     print("已在虚拟环境中，直接启动服务...")
+    # 导入server模块
     import server
+    
+    # 直接调用server的启动逻辑
+    print(f"服务器运行在端口 {server.PORT}")
+    print(f"本地访问: http://localhost:{server.PORT}")
+    print(f"网络访问: http://{server.HOST}:{server.PORT}")
+    print("服务器启动中...")
+    
+    try:
+        import uvicorn
+        uvicorn.run(
+            server.socket_app,
+            host=server.HOST,
+            port=server.PORT,
+            log_level=server.SERVER_CONFIG["LOG_LEVEL"]
+        )
+    except KeyboardInterrupt:
+        print("\n服务器关闭中...")
+    finally:
+        # 删除所有json文件，模拟数据库关闭
+        for file_path in server.DATA_FILES.values():
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                print(f"删除文件: {file_path}")
 else:
     # 不在虚拟环境中，需要创建并激活
     if platform.system().lower() == "linux":
@@ -35,3 +59,26 @@ else:
 
     # 现在再导入并运行主服务
     import server
+    
+    # 直接调用server的启动逻辑
+    print(f"服务器运行在端口 {server.PORT}")
+    print(f"本地访问: http://localhost:{server.PORT}")
+    print(f"网络访问: http://{server.HOST}:{server.PORT}")
+    print("服务器启动中...")
+    
+    try:
+        import uvicorn
+        uvicorn.run(
+            server.socket_app,
+            host=server.HOST,
+            port=server.PORT,
+            log_level=server.SERVER_CONFIG["LOG_LEVEL"]
+        )
+    except KeyboardInterrupt:
+        print("\n服务器关闭中...")
+    finally:
+        # 删除所有json文件，模拟数据库关闭
+        for file_path in server.DATA_FILES.values():
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                print(f"删除文件: {file_path}")
