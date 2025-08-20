@@ -244,12 +244,19 @@ security = HTTPBearer()
 def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
     """验证JWT令牌"""
     try:
+        print(f"正在验证JWT token: {credentials.credentials[:20]}...")
         payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=["HS256"])
+        print(f"JWT验证成功，用户: {payload.get('username', 'unknown')}")
         return payload
     except jwt.ExpiredSignatureError:
+        print("JWT token已过期")
         raise HTTPException(status_code=401, detail="访问令牌已过期")
-    except jwt.JWTError:
+    except jwt.JWTError as e:
+        print(f"JWT验证失败: {e}")
         raise HTTPException(status_code=401, detail="访问令牌无效")
+    except Exception as e:
+        print(f"JWT验证时发生未知错误: {e}")
+        raise HTTPException(status_code=401, detail="访问令牌验证失败")
 
 # 数据模型
 class UserRegister(BaseModel):
@@ -437,18 +444,31 @@ async def login(user_data: UserLogin):
 @app.get("/api/user/profile")
 async def get_profile(current_user: Dict = Depends(verify_token)):
     """获取用户信息"""
-    user = load_player(current_user["username"])
-    if not user:
-        raise HTTPException(status_code=404, detail="用户不存在")
+    # 先尝试从JSON数据获取
+    user = get_json_data_one_by_field('users', 'id', current_user["id"])
+    if user:
+        return {
+            "id": user["id"],
+            "username": user["username"],
+            "nickname": user["username"],
+            "total_games": user.get("total_games", 0),
+            "wins": user.get("wins", 0),
+            "losses": user.get("losses", 0)
+        }
     
-    return {
-        "id": user["id"],
-        "username": user["username"],
-        "nickname": user["username"],
-        "total_games": user.get("total_games", 0),
-        "wins": user.get("wins", 0),
-        "losses": user.get("losses", 0)
-    }
+    # 如果JSON中没有，尝试从players目录获取
+    user = load_player(current_user["username"])
+    if user:
+        return {
+            "id": user["id"],
+            "username": user["username"],
+            "nickname": user["username"],
+            "total_games": user.get("total_games", 0),
+            "wins": user.get("wins", 0),
+            "losses": user.get("losses", 0)
+        }
+    
+    raise HTTPException(status_code=404, detail="用户不存在")
 
 @app.get("/api/user/stats")
 async def get_stats(current_user: Dict = Depends(verify_token)):
