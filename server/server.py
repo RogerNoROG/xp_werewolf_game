@@ -1089,7 +1089,12 @@ if __name__ == "__main__":
         script_path = os.path.join(os.path.dirname(__file__), "setup_venv.sh")
         if os.path.exists(script_path):
             print("检测到Linux环境，自动创建虚拟环境并安装依赖...")
-            subprocess.run(["bash", script_path], check=True)
+            result = subprocess.run(["bash", script_path], check=True)
+            if result.returncode != 0:
+                print("依赖安装失败，程序终止。")
+                sys.exit(1)
+            else:
+                print("依赖安装完成，继续启动服务...")
         else:
             print("未找到setup_venv.sh脚本，跳过虚拟环境创建。")
     else:
