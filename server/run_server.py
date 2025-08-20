@@ -19,9 +19,13 @@ else:
 
 # 激活虚拟环境（仅对Linux）
 if platform.system().lower() == "linux":
-    activate_this = os.path.join(os.path.dirname(__file__), "venv/bin/activate_this.py")
-    if os.path.exists(activate_this):
-        exec(open(activate_this).read(), dict(__file__=activate_this))
+    venv_python = os.path.join(os.path.dirname(__file__), "venv/bin/python")
+    if os.path.exists(venv_python):
+        print(f"使用虚拟环境Python: {venv_python}")
+        # 重新启动进程，使用虚拟环境的Python
+        os.execv(venv_python, [venv_python, __file__])
+    else:
+        print("虚拟环境Python未找到，使用系统Python")
 
 # 现在再导入并运行主服务
 import server
