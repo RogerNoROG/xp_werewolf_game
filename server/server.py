@@ -56,6 +56,18 @@ DATA_FILES = {
     'discussions': os.path.join(get_database_dir(), 'discussions.json'),
 }
 
+# 确保数据目录存在
+def ensure_data_dirs():
+    """确保所有数据目录存在"""
+    for data_type, file_path in DATA_FILES.items():
+        data_dir = os.path.dirname(file_path)
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir, exist_ok=True)
+            print(f"创建数据目录: {data_dir}")
+
+# 初始化数据目录
+ensure_data_dirs()
+
 # 线程锁，保证多线程/协程下文件操作安全
 DATA_LOCKS = {k: threading.Lock() for k in DATA_FILES}
 
