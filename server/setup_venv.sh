@@ -2,6 +2,9 @@
 # 在Ubuntu下创建虚拟环境并安装依赖
 set -e
 
+# 确保在脚本所在目录执行
+cd "$(dirname "$0")"
+
 if [ ! -d "venv" ]; then
     python3 -m venv venv
 fi
